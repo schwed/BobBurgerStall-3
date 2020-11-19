@@ -16,14 +16,12 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BobBurgeoningFortune {
 
     private final static Logger logger = Logger.getLogger(BobBurgeoningFortune.class.getName());
-    static Currency currency = Currency.getInstance(Locale.GERMANY);
-    static NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+    private final static Currency currency = Currency.getInstance(Locale.GERMANY);
+    private final static NumberFormat numberFormat = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     public static void main(String[] args) throws IOException {
 
@@ -44,27 +42,27 @@ public class BobBurgeoningFortune {
             throw new RuntimeException("INPUT FILE DOES NOT HAVE READ PERMISSION");
         }
 
-        // read file bob prepared with all his investments ino crypto coins
-        List<String> cryptoCoinsList;
-
-        try (Stream<String> stream = Files.lines(filePath)) {
-            cryptoCoinsList = stream.collect(Collectors.toList());
-        }
-
         BobFortuneController controller = new BobFortuneControllerImpl();
-        double totalCoinsValue = 0;
-        System.out.println("Bob investment by Crypto Coins:");
-        for (String line : cryptoCoinsList) {
-            String[] lineSplit = line.split("=");
-            // display each coin in EUR
-            double cryptoCoinValue =  controller.getCryptoCoinValue(lineSplit[0], lineSplit[1], "EUR");
+        // read file bob prepared with all his investments
+        List<String> cryptoCoinsList = controller.readFile(filePath);
 
-            System.out.println(line + " in " + currency.getDisplayName() + ": " + numberFormat.format(cryptoCoinValue));
+        double totalCoinsValue = 0;
+
+        System.out.println("Bob investment by Crypto Coins:");
+
+        for (String fileLine : cryptoCoinsList) {
+
+            // display each coin in EUR
+            double cryptoCoinValue =  controller.getCryptoCoinValue(fileLine, "EUR");
+
+            System.out.println(fileLine + " in " + currency.getDisplayName() + ": " + numberFormat.format(cryptoCoinValue));
+
+            // calculate total
             totalCoinsValue += cryptoCoinValue;
         }
 
         // display total
         System.out.print("Bobs crypto currency fortune total in " + currency.getDisplayName() + ": " + numberFormat.format(totalCoinsValue));
-        System.out.println("\n");
     }
+
 }
